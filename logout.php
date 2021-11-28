@@ -1,17 +1,8 @@
 <?php
-
 session_start();
-
-unset($_SESSION["uid"]);
-
-unset($_SESSION["name"]);
-
-$BackToMyPage = $_SERVER['HTTP_REFERER'];
-if(isset($BackToMyPage)) {
-    header('Location: '.$BackToMyPage);
-} else {
-    header('Location: index.php'); // default page
+session_destroy();
+foreach ($_SESSION as $key => $value) {
+	unset($_SESSION[$key]);
 }
-   
-
-?>
+var_dump($_SESSION);
+header('location:login.php');

@@ -1,53 +1,74 @@
-<?php
-include "db.php";
+<!DOCTYPE html>
+<html lang="en">
+<?php 
 
 session_start();
+if(isset($_SESSION['login_admin_id'])){
+	header('Location:index.php?page=home');
+}
+include 'header.php';
+ ?>
 
+<body>
+	<main>
+		
+		<div class="container-fluid">
+			
+			<div class="col-lg-12">
+				<div class="row">
+					<div class="col-md-4 offset-4 card">
+						<div class="card-body">
+							<form action="" id="login-frm">
+								<div class="form-group">
+									<label for="username" class="control-label">Username</label>
+									<input type="text" name="username" id="username" class="form-control">
+								</div>
+								<div class="form-group">
+									<label for="password" class="control-label">Password</label>
+									<input type="password" name="password" id="password" class="form-control">
+								</div>
+								<center>
+									<button class="btn btn-block col-md-3 btn-primary">Login</button>
+								</center>
 
-if(isset($_POST["email"]) && isset($_POST["password"])){
-	$email = mysqli_real_escape_string($con,$_POST["email"]);
-	$password = $_POST["password"];
-	$sql = "SELECT * FROM user_info WHERE email = '$email' AND password = '$password'";
-	$run_query = mysqli_query($con,$sql);
-	$count = mysqli_num_rows($run_query);
-	if($count > 0){
-	    $row = mysqli_fetch_array($run_query);
-			$_SESSION["uid"] = $row["user_id"];
-			$_SESSION["name"] = $row["first_name"];
-			$ip_add = getenv("REMOTE_ADDR");
-		}
-	if($count > 0){
-		   	
-			if (isset($_COOKIE["product_list"])) {
-				$p_list = stripcslashes($_COOKIE["product_list"]);
-				$product_list = json_decode($p_list,true);
-				for ($i=0; $i < count($product_list); $i++) { 
-					$verify_cart = "SELECT id FROM cart WHERE user_id = $_SESSION[uid] AND p_id = ".$product_list[$i];
-					$result  = mysqli_query($con,$verify_cart);
-					if(mysqli_num_rows($result) < 1){
-						$update_cart = "UPDATE cart SET user_id = '$_SESSION[uid]' WHERE ip_add = '$ip_add' AND user_id = -1";
-						mysqli_query($con,$update_cart);
-					}else{
-						$delete_existing_product = "DELETE FROM cart WHERE user_id = -1 AND ip_add = '$ip_add' AND p_id = ".$product_list[$i];
-						mysqli_query($con,$delete_existing_product);
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+	</main>
+	<?php //include 'footer.php' ?>
+	
+</body>
+
+<script>
+	$(document).ready(function(){
+		$('#login-frm').submit(function(e){
+			e.preventDefault()
+			start_load()
+			$.ajax({
+				url:'authenticate.php',
+				method:'POST',
+				data:$(this).serialize(),
+				error:err=>{
+					console.log(err)
+				},
+				success:function(resp){
+					if(resp == 1){
+						location.replace('index.php?page=home')
 					}
 				}
-				setcookie("product_list","",strtotime("-1 day"),"/");
-				echo "cart_login";
-				
-				
-				exit();
-				
-			}
-			echo "login_success";
-				
-
-		}
-		else{
-			echo "Incorrect credentials.";
-		}
-    
-	
-}
-
-?>
+			})
+		})
+	})
+	window.start_load = function(){
+		$('body').append('<div id="preloader2"></div>');
+	}
+	window.end_load = function(){
+		$('body #preloader2').remove();
+	}
+</script>
+</html>
